@@ -1,6 +1,45 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class SunshineApp extends StatelessWidget {
+import 'package:credentials_helper/credentials_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+Future<List<Weather>> fetchData() async{
+
+  final response = await http.get('http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weather_api_key');
+  
+  if (response.statusCode == 200) {
+    List<Weather> weathers = List<Weather>(); 
+    Map<String, dynamic> data = jsonDecode(response.body);
+    int n = data['list'].length;
+    for (int i = 0; i < n; ++i) {
+      Weather w = Weather(
+        date: data['list'][i]['dt_txt'], 
+        high: (data['list'][i]['main']['temp_max']) * 1.0, 
+        low: (data['list'][i]['main']['temp_min']) * 1.0, 
+        state: data['list'][i]['weather'][0]['main']
+      );
+      weathers.add(w);
+    }
+    return weathers;
+  }
+
+  throw Exception('Failed to load weather data');
+}
+
+class SunshineApp extends StatefulWidget {
+  @override
+  SunshineAppState createState() => SunshineAppState();
+}
+
+class SunshineAppState extends State<SunshineApp> {
+  Future<List<Weather>> weatherData;
+
+  @override
+  void initState() {
+    super.initState();
+    weatherData = fetchData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +57,28 @@ class SunshineApp extends StatelessWidget {
 
           ],
         ),
-        body: WeatherList(
-          weathers: <Weather>[
-            Weather(date: 'Tomorrow', high: 44),
-            Weather(date: 'Day after tomorrow', high: 32),
-            Weather(date: 'The day after day after tomorrow', high: 34)
-        ]),
+        // body: WeatherList(
+        //   weathers: <Weather>[
+        //     Weather(date: 'Tomorrow', high: 44),
+        //     Weather(date: 'Day after tomorrow', high: 32),
+        //     Weather(date: 'The day after day after tomorrow', high: 34)
+        // ]),
+        body: Center(
+          child: FutureBuilder<List<Weather>> (
+            future: weatherData,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return WeatherList(
+                  weathers: snapshot.data,
+                );
+              }
+              else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+              return CircularProgressIndicator();
+            },
+          ),
+        ),
       ),
     );
   }
@@ -32,8 +87,8 @@ class SunshineApp extends StatelessWidget {
 class Weather {
   Weather({this.date, this.high, this.low, this.state});
   final String date;
-  final int high;
-  final int low;
+  final double high;
+  final double low;
   final String state;
 }
 
@@ -44,12 +99,22 @@ class WeatherList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: <Widget>[
-        MainWeather(weather: Weather(date: 'Today, June 21', high: 21, low: 13, state: 'Clouds'),),
-        WeatherItem(weather: Weather(date: 'Tomorrow', high: 18, low: 11, state: 'Clear')),
-        WeatherItem(weather: Weather(date: 'Monday', high: 16, low: 11, state: 'Clear'))
-      ],
+    // return ListView(
+    //   children: <Widget>[
+    //     MainWeather(weather: Weather(date: 'Today, June 21', high: 21, low: 13, state: 'Clouds'),),
+    //     WeatherItem(weather: Weather(date: 'Tomorrow', high: 18, low: 11, state: 'Clear')),
+    //     WeatherItem(weather: Weather(date: 'Monday', high: 16, low: 11, state: 'Clear'))
+    //   ],
+    // );
+    List<Widget> something = <Widget>[
+      MainWeather(weather: weathers[0])
+    ];
+    for (int i = 1; i < weathers.length; ++i) {
+      something.add(WeatherItem(weather: weathers[i]));
+    }
+
+    return ListView (
+      children: something,
     );
   }
 }
@@ -139,6 +204,8 @@ class WeatherItem extends StatelessWidget {
     );
   }
 }
+
+String weather_api_key = "";
 
 void main() {
   runApp(SunshineApp());
