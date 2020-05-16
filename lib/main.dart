@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:credentials_helper/credentials_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 Future<List<Weather>> fetchData() async{
 
-  final response = await http.get('http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weather_api_key');
+  final response = await http.get('http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey');
   
   if (response.statusCode == 200) {
     List<Weather> weathers = List<Weather>(); 
@@ -14,7 +15,7 @@ Future<List<Weather>> fetchData() async{
     int n = data['list'].length;
     for (int i = 0; i < n; ++i) {
       Weather w = Weather(
-        date: data['list'][i]['dt_txt'], 
+        date: parseDate(data['list'][i]['dt_txt']), 
         high: (data['list'][i]['main']['temp_max']) * 1.0, 
         low: (data['list'][i]['main']['temp_min']) * 1.0, 
         state: data['list'][i]['weather'][0]['main']
@@ -25,6 +26,14 @@ Future<List<Weather>> fetchData() async{
   }
 
   throw Exception('Failed to load weather data');
+}
+
+String parseDate(String dateString) {
+  DateTime d = DateTime.parse(dateString);
+  DateTime n = DateTime.now();
+  if (d.day == n.day) return 'Today, ${DateFormat("MMM d, h:mm a").format(d)}';
+  else if (d.difference(n).inHours < 24) return 'Tomorrow, ${DateFormat("h a").format(d)}';
+  return DateFormat("MMM d, h a").format(d).toString();
 }
 
 class SunshineApp extends StatefulWidget {
@@ -52,10 +61,6 @@ class SunshineAppState extends State<SunshineApp> {
         appBar: AppBar(
           leading: Icon(Icons.wb_sunny, color: Colors.yellow, size: 32,),
           title: Text('Sunshine', style: TextStyle(color: Colors.white),),
-          actions: <Widget>[
-            IconButton(icon: Icon(Icons.more_vert, color: Colors.white), onPressed: null),
-
-          ],
         ),
         // body: WeatherList(
         //   weathers: <Weather>[
@@ -90,6 +95,19 @@ class Weather {
   final double high;
   final double low;
   final String state;
+
+  IconData getIcon() {
+    if (state == "Clouds") {
+      return Icons.cloud;
+    }
+    else if (state == "Rain") {
+      return Icons.flash_on;
+    }
+    else if (state == "Clear") {
+      return Icons.wb_sunny;
+    }
+    return Icons.error;
+  }
 }
 
 class WeatherList extends StatelessWidget {
@@ -136,9 +154,9 @@ class MainWeather extends StatelessWidget {
                 // Date label
                 Container(padding: EdgeInsets.only(left:40, top:10, bottom: 10), child: Text(weather.date, style: TextStyle(fontSize: 21, color: Colors.white)), alignment: Alignment.centerLeft),
                 // High label
-                Container(padding: EdgeInsets.only(left:40), child: Text(weather.high.toString(), style: TextStyle(fontSize: 60, color: Colors.white,)), alignment: Alignment.centerLeft),
+                Container(padding: EdgeInsets.only(left:40), child: Text('${weather.high.toString()}\u00b0', style: TextStyle(fontSize: 55, color: Colors.white,)), alignment: Alignment.centerLeft),
                 // Low Label
-                Container(padding: EdgeInsets.only(left:40, top:10, bottom: 10), child: Text(weather.low.toString(), style: TextStyle(fontSize: 32, color: Colors.white)), alignment: Alignment.centerLeft,)
+                Container(padding: EdgeInsets.only(left:40, top:10, bottom: 10), child: Text('${weather.low.toString()}\u00b0', style: TextStyle(fontSize: 32, color: Colors.white)), alignment: Alignment.centerLeft,)
               ],
             ),
           ),
@@ -147,7 +165,7 @@ class MainWeather extends StatelessWidget {
               children: <Widget>[
                 // The Weather Icon
                 Container(
-                  child: Icon(Icons.cloud, color: Colors.white, size: 60,),
+                  child: Icon(weather.getIcon(), color: Colors.white, size: 60,),
                 ),
                 // The Weather state text
                 Container(
@@ -179,7 +197,7 @@ class WeatherItem extends StatelessWidget {
             children: <Widget>[
               Container(
                 padding: EdgeInsets.all(10),
-                child: Icon(Icons.cloud, size: 30, color: Colors.grey,),
+                child: Icon(weather.getIcon(), size: 30, color: Colors.grey,),
               )
             ],
           ),
@@ -194,9 +212,9 @@ class WeatherItem extends StatelessWidget {
           Column(
             children: <Widget>[
               // High temperature label
-              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text(weather.high.toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)),
+              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text('${weather.high.toString()}\u00b0', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)),
               // Low temperature label
-              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text(weather.low.toString()))
+              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text('${weather.low.toString()}\u00b0'))
             ],
           )
         ],
@@ -205,7 +223,7 @@ class WeatherItem extends StatelessWidget {
   }
 }
 
-String weather_api_key = "";
+String weatherApiKey = "";
 
 void main() {
   runApp(SunshineApp());
