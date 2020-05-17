@@ -4,20 +4,21 @@ import 'package:credentials_helper/credentials_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sunshine/components/MainWeatherItem.dart';
+import 'package:sunshine/components/settings.dart';
 import 'package:sunshine/weather.dart';
 import 'package:sunshine/components/WeatherItem.dart';
 
-
 String weatherApiKey = "";
-final API_FORECAST_REQUEST = 'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
-final API_WEATHER_REQUEST = 'http://api.openweathermap.org/data/2.5/weather?q=kirksville&units=metric&appid=$weatherApiKey';
+final API_FORECAST_REQUEST =
+    'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
+final API_WEATHER_REQUEST =
+    'http://api.openweathermap.org/data/2.5/weather?q=kirksville&units=metric&appid=$weatherApiKey';
 
-Future<List<Weather>> fetchForecast() async{
-
+Future<List<Weather>> fetchForecast() async {
   final response = await http.get(API_FORECAST_REQUEST);
-  
+
   if (response.statusCode == 200) {
-    List<Weather> weathers = List<Weather>(); 
+    List<Weather> weathers = List<Weather>();
     Map<String, dynamic> data = jsonDecode(response.body);
     // Testing only
     print(data['list'].runtimeType);
@@ -33,10 +34,9 @@ Future<List<Weather>> fetchForecast() async{
   throw Exception('Failed to load forecast data');
 }
 
-Future<Weather> fetchWeather() async{
-
+Future<Weather> fetchWeather() async {
   final response = await http.get(API_WEATHER_REQUEST);
-  
+
   if (response.statusCode == 200) {
     Map<String, dynamic> data = jsonDecode(response.body);
     // Testing only
@@ -67,18 +67,28 @@ class SunshineAppState extends State<SunshineApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sunshine App',
-      theme: ThemeData(
-        primaryColor: Colors.lightBlue[300],
-      ),
-      home: Scaffold(
+    return Scaffold(
         appBar: AppBar(
-          leading: Icon(Icons.wb_sunny, color: Colors.yellow, size: 32,),
-          title: Text('Sunshine', style: TextStyle(color: Colors.white),),
+          leading: Icon(
+            Icons.wb_sunny,
+            color: Colors.yellow,
+            size: 32,
+          ),
+          title: Text(
+            'Sunshine',
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(Icons.more_vert, color: Colors.white,),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SettingsPage()));
+                }),
+          ],
         ),
         body: Center(
-          child: FutureBuilder<List> (
+          child: FutureBuilder<List>(
             future: data,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -86,15 +96,13 @@ class SunshineAppState extends State<SunshineApp> {
                   forecastData: snapshot.data[1],
                   weather: snapshot.data[0],
                 );
-              }
-              else if (snapshot.hasError) {
+              } else if (snapshot.hasError) {
                 return Text('${snapshot.error}');
               }
               return CircularProgressIndicator();
             },
           ),
         ),
-      ),
     );
   }
 }
@@ -114,19 +122,24 @@ class WeatherList extends StatelessWidget {
     //     WeatherItem(weather: Weather(date: 'Monday', high: 16, low: 11, state: 'Clear'))
     //   ],
     // );
-    List<Widget> something = <Widget>[
-      MainWeather(weather: weather)
-    ];
+    List<Widget> something = <Widget>[MainWeather(weather: weather)];
     for (int i = 0; i < forecastData.length; ++i) {
       something.add(WeatherItem(weather: forecastData[i]));
     }
 
-    return ListView (
+    return ListView(
       children: something,
     );
   }
 }
 
 void main() {
-  runApp(SunshineApp());
+  runApp(MaterialApp(
+    title: 'SunshineApp',
+    home: SunshineApp(),
+    theme: ThemeData(
+      primaryColor: Colors.lightBlue[300],
+    )
+  )
+  );
 }
