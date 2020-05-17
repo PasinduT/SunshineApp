@@ -3,37 +3,52 @@ import 'dart:convert';
 import 'package:credentials_helper/credentials_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:sunshine/components/MainWeatherItem.dart';
+import 'package:sunshine/weather.dart';
+import 'package:sunshine/components/WeatherItem.dart';
 
-Future<List<Weather>> fetchData() async{
 
-  final response = await http.get('http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey');
+String weatherApiKey = "";
+final API_FORECAST_REQUEST = 'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
+final API_WEATHER_REQUEST = 'http://api.openweathermap.org/data/2.5/weather?q=kirksville&units=metric&appid=$weatherApiKey';
+
+Future<List<Weather>> fetchForecast() async{
+
+  final response = await http.get(API_FORECAST_REQUEST);
   
   if (response.statusCode == 200) {
     List<Weather> weathers = List<Weather>(); 
     Map<String, dynamic> data = jsonDecode(response.body);
+    // Testing only
+    print(data['list'].runtimeType);
     int n = data['list'].length;
     for (int i = 0; i < n; ++i) {
-      Weather w = Weather(
-        date: parseDate(data['list'][i]['dt_txt']), 
-        high: (data['list'][i]['main']['temp_max']) * 1.0, 
-        low: (data['list'][i]['main']['temp_min']) * 1.0, 
-        state: data['list'][i]['weather'][0]['main']
-      );
+      Map<String, dynamic> dataItem = data['list'][i];
+      dataItem['timezone'] = data['city']['timezone'];
+      Weather w = Weather.fromJson(data['list'][i]);
       weathers.add(w);
     }
     return weathers;
   }
-
-  throw Exception('Failed to load weather data');
+  throw Exception('Failed to load forecast data');
 }
 
-String parseDate(String dateString) {
-  DateTime d = DateTime.parse(dateString);
-  DateTime n = DateTime.now();
-  if (d.day == n.day) return 'Today, ${DateFormat("MMM d, h:mm a").format(d)}';
-  else if (d.difference(n).inHours < 24) return 'Tomorrow, ${DateFormat("h a").format(d)}';
-  return DateFormat("MMM d, h a").format(d).toString();
+Future<Weather> fetchWeather() async{
+
+  final response = await http.get(API_WEATHER_REQUEST);
+  
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = jsonDecode(response.body);
+    // Testing only
+    return Weather.fromJson(data);
+  }
+  throw Exception('Failed to load forecast data');
+}
+
+Future<List> fetchData() async {
+  final forecastData = await fetchForecast();
+  final weatherData = await fetchWeather();
+  return [weatherData, forecastData];
 }
 
 class SunshineApp extends StatefulWidget {
@@ -42,12 +57,12 @@ class SunshineApp extends StatefulWidget {
 }
 
 class SunshineAppState extends State<SunshineApp> {
-  Future<List<Weather>> weatherData;
+  Future<List> data;
 
   @override
   void initState() {
     super.initState();
-    weatherData = fetchData();
+    data = fetchData();
   }
 
   @override
@@ -62,19 +77,14 @@ class SunshineAppState extends State<SunshineApp> {
           leading: Icon(Icons.wb_sunny, color: Colors.yellow, size: 32,),
           title: Text('Sunshine', style: TextStyle(color: Colors.white),),
         ),
-        // body: WeatherList(
-        //   weathers: <Weather>[
-        //     Weather(date: 'Tomorrow', high: 44),
-        //     Weather(date: 'Day after tomorrow', high: 32),
-        //     Weather(date: 'The day after day after tomorrow', high: 34)
-        // ]),
         body: Center(
-          child: FutureBuilder<List<Weather>> (
-            future: weatherData,
+          child: FutureBuilder<List> (
+            future: data,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return WeatherList(
-                  weathers: snapshot.data,
+                  forecastData: snapshot.data[1],
+                  weather: snapshot.data[0],
                 );
               }
               else if (snapshot.hasError) {
@@ -89,31 +99,11 @@ class SunshineAppState extends State<SunshineApp> {
   }
 }
 
-class Weather {
-  Weather({this.date, this.high, this.low, this.state});
-  final String date;
-  final double high;
-  final double low;
-  final String state;
-
-  IconData getIcon() {
-    if (state == "Clouds") {
-      return Icons.cloud;
-    }
-    else if (state == "Rain") {
-      return Icons.flash_on;
-    }
-    else if (state == "Clear") {
-      return Icons.wb_sunny;
-    }
-    return Icons.error;
-  }
-}
-
 class WeatherList extends StatelessWidget {
-  WeatherList({this.weathers});
+  WeatherList({this.forecastData, this.weather});
 
-  final List<Weather> weathers;
+  final List<Weather> forecastData;
+  final Weather weather;
 
   @override
   Widget build(BuildContext context) {
@@ -125,10 +115,10 @@ class WeatherList extends StatelessWidget {
     //   ],
     // );
     List<Widget> something = <Widget>[
-      MainWeather(weather: weathers[0])
+      MainWeather(weather: weather)
     ];
-    for (int i = 1; i < weathers.length; ++i) {
-      something.add(WeatherItem(weather: weathers[i]));
+    for (int i = 0; i < forecastData.length; ++i) {
+      something.add(WeatherItem(weather: forecastData[i]));
     }
 
     return ListView (
@@ -136,94 +126,6 @@ class WeatherList extends StatelessWidget {
     );
   }
 }
-
-class MainWeather extends StatelessWidget {
-  MainWeather({this.weather});
-
-  final Weather weather;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: 20, top: 20),
-      color: Theme.of(context).primaryColor,
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              children: <Widget>[
-                // Date label
-                Container(padding: EdgeInsets.only(left:40, top:10, bottom: 10), child: Text(weather.date, style: TextStyle(fontSize: 21, color: Colors.white)), alignment: Alignment.centerLeft),
-                // High label
-                Container(padding: EdgeInsets.only(left:40), child: Text('${weather.high.toString()}\u00b0', style: TextStyle(fontSize: 55, color: Colors.white,)), alignment: Alignment.centerLeft),
-                // Low Label
-                Container(padding: EdgeInsets.only(left:40, top:10, bottom: 10), child: Text('${weather.low.toString()}\u00b0', style: TextStyle(fontSize: 32, color: Colors.white)), alignment: Alignment.centerLeft,)
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              children: <Widget>[
-                // The Weather Icon
-                Container(
-                  child: Icon(weather.getIcon(), color: Colors.white, size: 60,),
-                ),
-                // The Weather state text
-                Container(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:Text(weather.state, style: TextStyle(fontSize: 21, color: Colors.white)),
-                  
-                )
-              ],
-              mainAxisAlignment: MainAxisAlignment.start,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class WeatherItem extends StatelessWidget {
-  WeatherItem({this.weather});
-
-  final Weather weather;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(top:10, bottom: 10),
-      child: Row(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(10),
-                child: Icon(weather.getIcon(), size: 30, color: Colors.grey,),
-              )
-            ],
-          ),
-          Expanded(child: Column(
-            children: <Widget>[
-              // Weather date label
-              Container(child: Text(weather.date, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),), alignment: Alignment.centerLeft,),
-              // Weather State label
-              Container(child: Text(weather.state, style: TextStyle(fontSize: 15),), alignment: Alignment.centerLeft,),
-            ],
-          )),
-          Column(
-            children: <Widget>[
-              // High temperature label
-              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text('${weather.high.toString()}\u00b0', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)),
-              // Low temperature label
-              Container(padding: EdgeInsets.only(right: 20, bottom: 5), child: Text('${weather.low.toString()}\u00b0'))
-            ],
-          )
-        ],
-      ),
-    );
-  }
-}
-
-String weatherApiKey = "";
 
 void main() {
   runApp(SunshineApp());
