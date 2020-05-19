@@ -6,7 +6,7 @@ Weather data is obtained from the [OpenWeatherMap](openweathermap.org), where th
 
 http://api.openweathermap.org/data/2.5/forecast?q=kirksville&appid={api_key}&units=metric
 
-`{api_key}` must be obtained from the site using a free account, and entered in the main.dart file as follows.
+`{api_key}` must be obtained from the site using a free account, and entered in the weather_bloc.dart file as follows.
 
 ```Dart
 String weatherApiKey = "{api_key}";
@@ -20,6 +20,7 @@ String weatherApiKey = "{api_key}";
 ### TODO
 - [x] Add ability to switch between units
 - [ ] Ability to change location
+- [ ] Add animations
 - [x] Get current weather in the main window
 - [x] View more data when you click on an item
     - [ ] Parse more weather features and add them in the details page
