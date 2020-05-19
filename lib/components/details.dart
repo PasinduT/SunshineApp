@@ -12,12 +12,15 @@ class DetailsPage extends StatelessWidget {
         title: Text('Details'),
       ),
       body: Container(
-        padding: EdgeInsets.only(top:20),
-        child: Column(
+        padding: EdgeInsets.only(top: 20),
+        child: ListView(
           children: <Widget>[
-            DetailItem(first: 'Time:', second: '${weather.getDetailsItemDate()}'),
-            DetailItem(first: 'Temperature High:', second: '${weather.getTempHigh()}'),
-            DetailItem(first: 'Temperature Low:', second: '${weather.getTempLow()}'),
+            DetailItem(
+                first: 'Time:', second: '${weather.getDetailsItemDate()}'),
+            DetailItem(
+                first: 'Temperature High:', second: '${weather.getTempHigh()}'),
+            DetailItem(
+                first: 'Temperature Low:', second: '${weather.getTempLow()}'),
             DetailItem(first: 'State:', second: '${weather.state}'),
           ],
         ),
@@ -35,15 +38,18 @@ class DetailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
-      child: Row(
-        children: <Widget>[
-          Text(first, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),), 
-          Container(
-            padding: EdgeInsets.only(left: 20),
-            child: Text(second, style: TextStyle(fontSize: 24,))
-          ),
-        ],
+      child: ListTile(
+        title: Text(
+          first,
+          style: TextStyle(
+              fontSize: Theme.of(context).textTheme.headline6.fontSize,
+              fontWeight: FontWeight.bold),
+        ),
+        trailing: Container(
+            child: Text(second,
+                style: TextStyle(
+                  fontSize: Theme.of(context).textTheme.headline6.fontSize,
+                ))),
       ),
     );
   }

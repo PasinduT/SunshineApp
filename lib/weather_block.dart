@@ -6,9 +6,9 @@ import 'package:sunshine/weather.dart';
 import 'package:http/http.dart' as http;
 
 String weatherApiKey = "";
-final API_FORECAST_REQUEST =
+String API_FORECAST_REQUEST =
     'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
-final API_WEATHER_REQUEST =
+String API_WEATHER_REQUEST =
     'http://api.openweathermap.org/data/2.5/weather?q=kirksville&units=metric&appid=$weatherApiKey';
 
 Future<List<Weather>> fetchForecast() async {
@@ -56,7 +56,11 @@ class WeatherBloc {
 
   void updateWeatherData() async {
     _weatherData.add(null);
-    List<dynamic> data = await fetchData();
-    _weatherData.add(data);
+    try {
+      List<dynamic> data = await fetchData();
+      _weatherData.add(data);
+    } catch (err) {
+      _weatherData.addError(err);
+    }
   }
 }

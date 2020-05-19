@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sunshine/preferences_model.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key key, this.isMetricToggle, this.initialIsMetric})
@@ -14,58 +16,30 @@ class SettingsPage extends StatelessWidget {
         title: Text('Settings'),
       ),
       body: ListView(
-        children: <Widget>[
-          MetricTile(
-            isMetricToggle: isMetricToggle,
-            initialIsMetric: initialIsMetric,
-          )
-        ],
+        children: <Widget>[MetricTile()],
       ),
     );
   }
 }
 
-class MetricTile extends StatefulWidget {
-  MetricTile({Key key, this.initialIsMetric, this.isMetricToggle})
-      : super(key: key);
-  final VoidCallback isMetricToggle;
-  final bool initialIsMetric;
-
-  @override
-  _MetricTileState createState() => _MetricTileState(
-    isMetricToggle: isMetricToggle,
-    isMetric: initialIsMetric,
-  );
-}
-
-class _MetricTileState extends State<MetricTile> {
-  _MetricTileState({this.isMetric, this.isMetricToggle});
-
-  final VoidCallback isMetricToggle;
-  bool isMetric;
+class MetricTile extends StatelessWidget {
+  const MetricTile({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: ListTile(
+    return Consumer<PreferencesModel>(
+        builder: (context, preferencesModel, child) {
+      return ListTile(
         title: Text('Metric units'),
         trailing: Switch(
           activeColor: Colors.blue,
           activeTrackColor: Colors.lightBlue,
-          value: isMetric,
+          value: preferencesModel.isMetric,
           onChanged: (bool) {
-            isMetricToggle();
-            setState(() {
-              if (isMetric) {
-                isMetric = false;
-              }
-              else {
-                isMetric = true;
-              }
-            });
+            preferencesModel.toggleIsMetric();
           },
         ),
-      ),
-    );
+      );
+    });
   }
 }

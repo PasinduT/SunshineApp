@@ -50,7 +50,7 @@ class Weather {
         isUtc: true);
     DateTime n = DateTime.now();
     if (d.day == n.day)
-      return 'Today, ${DateFormat("MMM d, h:mm a").format(d)}';
+      return 'Today, ${DateFormat("h:mm a").format(d)}';
     else if (d.difference(n).inHours < 24)
       return 'Tomorrow, ${DateFormat("h a").format(d)}';
     return DateFormat("MMM d, h a").format(d).toString();
