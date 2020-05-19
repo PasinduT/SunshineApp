@@ -57,11 +57,11 @@ class Weather {
   }
 
   String getTempHigh({int dp = 2}) {
-    return (_isMetric) ? '${high.toStringAsFixed(dp)}\u00b0C' : '${high.toStringAsFixed(2)} F';
+    return (_isMetric) ? '${high.toStringAsFixed(dp)}\u00b0C' : '${high.toStringAsFixed(dp)} F';
   }
 
   String getTempLow({int dp = 2}) {
-    return (_isMetric) ? '${low.toStringAsFixed(dp)}\u00b0C' : '${low.toStringAsFixed(2)} F';
+    return (_isMetric) ? '${low.toStringAsFixed(dp)}\u00b0C' : '${low.toStringAsFixed(dp)} F';
   }
 
   String getWeatherItemDate() {
