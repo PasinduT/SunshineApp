@@ -63,14 +63,14 @@ class WeatherItem extends StatelessWidget {
                 Container(
                     padding: EdgeInsets.only(right: 20, bottom: 5),
                     child: Text(
-                      '${weather.high.toString()}\u00b0',
+                      '${weather.high.toStringAsFixed(2)}\u00b0',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     )),
                 // Low temperature label
                 Container(
                     padding: EdgeInsets.only(right: 20, bottom: 5),
-                    child: Text('${weather.low.toString()}\u00b0'))
+                    child: Text('${weather.low.toStringAsFixed(2)}\u00b0'))
               ],
             )
           ],

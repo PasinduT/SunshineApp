@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Weather {
-  Weather({this.date, this.high, this.low, this.state, this.dt});
+  Weather({this.date, this.high, this.low, this.state, this.dt, bool isMetric}) : _isMetric = true;
   final String date;
   int dt;
-  final double high;
-  final double low;
+  double high;
+  double low;
   final String state;
+  bool _isMetric = true;
 
   IconData getIcon() {
     if (state == "Clouds") {
@@ -18,6 +19,30 @@ class Weather {
       return Icons.wb_sunny;
     }
     return Icons.error;
+  }
+
+  double _toC(double temp) {
+    return temp * 9 / 5 + 32; 
+  }
+
+  double _toF(double temp) {
+    return (temp - 32) * 5 / 9;
+  }
+
+  void changeToMetric() {
+    if (!_isMetric) {
+      high = _toF(high);
+      low = _toF(low);
+      _isMetric = true;
+    }
+  }
+
+  void changeToImperial() {
+    if (_isMetric) {
+      high = _toC(high);
+      low = _toC(low);
+      _isMetric = false;
+    }
   }
 
   static String parseDate(int dt, int timezone) {
@@ -43,6 +68,7 @@ class Weather {
       high: (data['main']['temp_max']) * 1.0,
       low: (data['main']['temp_min']) * 1.0,
       state: data['weather'][0]['main'],
+      isMetric: true,
     );
   }
 }

@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:credentials_helper/credentials_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:sunshine/components/MainWeatherItem.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sunshine/components/settings.dart';
 import 'package:sunshine/weather.dart';
-import 'package:sunshine/components/WeatherItem.dart';
+import 'package:sunshine/components/weatherlist.dart';
 
-String weatherApiKey = "";
+String weatherApiKey = "d612e0f68dcffc4da1da0965bab8aac0";
 final API_FORECAST_REQUEST =
     'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
 final API_WEATHER_REQUEST =
@@ -58,88 +58,115 @@ class SunshineApp extends StatefulWidget {
 
 class SunshineAppState extends State<SunshineApp> {
   Future<List> data;
+  bool isMetric = true;
 
   @override
   void initState() {
     super.initState();
     data = fetchData();
+    getIsMetricPreference();
+  }
+
+  @override
+  void dispose() {
+    setIsMetricPreference();
+    super.dispose();
+  }
+
+  void getIsMetricPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('metric') == null) {
+        print('Failed to load isMetric configuration from disk');
+      }
+      else {
+        isMetric = prefs.getBool('metric');
+        print('Loaded isMetric configuration from disk');
+      }
+      // isMetric = prefs.getBool('metric') ?? isMetric;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void setIsMetricPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      prefs.setBool('metric', isMetric);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _toggleIsMetric() {
+    setState(() {
+      if (isMetric) {
+        isMetric = false;
+      } else {
+        isMetric = true;
+      }
+    });
+    setIsMetricPreference();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          leading: Icon(
-            Icons.wb_sunny,
-            color: Colors.yellow,
-            size: 32,
-          ),
-          title: Text(
-            'Sunshine',
-            style: TextStyle(color: Colors.white),
-          ),
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(Icons.more_vert, color: Colors.white,),
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SettingsPage()));
-                }),
-          ],
+      appBar: AppBar(
+        leading: Icon(
+          Icons.wb_sunny,
+          color: Colors.yellow,
+          size: 32,
         ),
-        body: Center(
-          child: FutureBuilder<List>(
-            future: data,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return WeatherList(
-                  forecastData: snapshot.data[1],
-                  weather: snapshot.data[0],
-                );
-              } else if (snapshot.hasError) {
-                return Text('${snapshot.error}');
-              }
-              return CircularProgressIndicator();
-            },
-          ),
+        title: Text(
+          'Sunshine',
+          style: TextStyle(color: Colors.white),
         ),
-    );
-  }
-}
-
-class WeatherList extends StatelessWidget {
-  WeatherList({this.forecastData, this.weather});
-
-  final List<Weather> forecastData;
-  final Weather weather;
-
-  @override
-  Widget build(BuildContext context) {
-    // return ListView(
-    //   children: <Widget>[
-    //     MainWeather(weather: Weather(date: 'Today, June 21', high: 21, low: 13, state: 'Clouds'),),
-    //     WeatherItem(weather: Weather(date: 'Tomorrow', high: 18, low: 11, state: 'Clear')),
-    //     WeatherItem(weather: Weather(date: 'Monday', high: 16, low: 11, state: 'Clear'))
-    //   ],
-    // );
-    List<Widget> something = <Widget>[MainWeather(weather: weather)];
-    for (int i = 0; i < forecastData.length; ++i) {
-      something.add(WeatherItem(weather: forecastData[i]));
-    }
-
-    return ListView(
-      children: something,
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                // _toggleIsMetric();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SettingsPage(
+                              isMetricToggle: _toggleIsMetric,
+                              initialIsMetric: isMetric,
+                            )));
+              }),
+        ],
+      ),
+      body: Center(
+        child: FutureBuilder<List>(
+          future: data,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return WeatherList(
+                forecastData: snapshot.data[1],
+                weather: snapshot.data[0],
+                isMetric: isMetric,
+              );
+            } else if (snapshot.hasError) {
+              return Text('${snapshot.error}');
+            }
+            return CircularProgressIndicator();
+          },
+        ),
+      ),
     );
   }
 }
 
 void main() {
   runApp(MaterialApp(
-    title: 'SunshineApp',
-    home: SunshineApp(),
-    theme: ThemeData(
-      primaryColor: Colors.lightBlue[300],
-    )
-  )
-  );
+      title: 'SunshineApp',
+      home: SunshineApp(),
+      theme: ThemeData(
+        primaryColor: Colors.lightBlue[300],
+      )));
 }

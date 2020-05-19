@@ -16,8 +16,8 @@ class DetailsPage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             DetailItem(first: 'Time:', second: '${weather.getDate()}'),
-            DetailItem(first: 'Temperature High:', second: '${weather.high}'),
-            DetailItem(first: 'Temperature Low:', second: '${weather.low}'),
+            DetailItem(first: 'Temperature High:', second: '${weather.high.toStringAsFixed(2)}'),
+            DetailItem(first: 'Temperature Low:', second: '${weather.low.toStringAsFixed(2)}'),
             DetailItem(first: 'State:', second: '${weather.state}'),
           ],
         ),

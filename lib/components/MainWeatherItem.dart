@@ -26,7 +26,7 @@ class MainWeather extends StatelessWidget {
                 // High label
                 Container(
                     padding: EdgeInsets.only(left: 40),
-                    child: Text('${weather.high.toString()}\u00b0',
+                    child: Text('${weather.high.toStringAsFixed(2)}\u00b0',
                         style: TextStyle(
                           fontSize: 55,
                           color: Colors.white,
@@ -35,7 +35,7 @@ class MainWeather extends StatelessWidget {
                 // Low Label
                 Container(
                   padding: EdgeInsets.only(left: 40, top: 10, bottom: 10),
-                  child: Text('${weather.low.toString()}\u00b0',
+                  child: Text('${weather.low.toStringAsFixed(2)}\u00b0',
                       style: TextStyle(fontSize: 32, color: Colors.white)),
                   alignment: Alignment.centerLeft,
                 )
