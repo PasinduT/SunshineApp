@@ -12,12 +12,13 @@ http://api.openweathermap.org/data/2.5/forecast?q=kirksville&appid={api_key}&uni
 String weatherApiKey = "{api_key}";
 ```
 
-### Images of the App
+### Gallery
 
-![An image of the app](/assets/avd1.png "Testing")
+![An image of the home page](/assets/avd_home.png "Home Page") ![An image of the settings page](/assets/avd_settings.png "Settings")
+![An image of the details page](/assets/avd_details.png "Details Page")
 
 ### TODO
-- [ ] Add ability to switch between units
+- [x] Add ability to switch between units
 - [ ] Ability to change location
 - [x] Get current weather in the main window
 - [x] View more data when you click on an item
