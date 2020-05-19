@@ -20,13 +20,13 @@ class MainWeather extends StatelessWidget {
                 // Date label
                 Container(
                     padding: EdgeInsets.only(left: 40, top: 10, bottom: 10),
-                    child: Text(weather.date,
+                    child: Text(weather.getMainWeatherItemDate(),
                         style: TextStyle(fontSize: 21, color: Colors.white)),
                     alignment: Alignment.centerLeft),
                 // High label
                 Container(
                     padding: EdgeInsets.only(left: 40),
-                    child: Text('${weather.high.toStringAsFixed(2)}\u00b0',
+                    child: Text('${weather.getTempHigh(dp:1)}',
                         style: TextStyle(
                           fontSize: 55,
                           color: Colors.white,
@@ -35,7 +35,7 @@ class MainWeather extends StatelessWidget {
                 // Low Label
                 Container(
                   padding: EdgeInsets.only(left: 40, top: 10, bottom: 10),
-                  child: Text('${weather.low.toStringAsFixed(2)}\u00b0',
+                  child: Text('${weather.getTempLow(dp:1)}',
                       style: TextStyle(fontSize: 32, color: Colors.white)),
                   alignment: Alignment.centerLeft,
                 )

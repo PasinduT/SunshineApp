@@ -56,9 +56,32 @@ class Weather {
     return DateFormat("MMM d, h a").format(d).toString();
   }
 
-  String getDate() {
+  String getTempHigh({int dp = 2}) {
+    return (_isMetric) ? '${high.toStringAsFixed(dp)}\u00b0C' : '${high.toStringAsFixed(dp)} F';
+  }
+
+  String getTempLow({int dp = 2}) {
+    return (_isMetric) ? '${low.toStringAsFixed(dp)}\u00b0C' : '${low.toStringAsFixed(dp)} F';
+  }
+
+  String getWeatherItemDate() {
+    return date;
+  }
+
+  String getDetailsItemDate() {
     return DateFormat('EEE, MMM d. h:mm')
-        .format(DateTime.fromMillisecondsSinceEpoch(this.dt, isUtc: true));
+       .format(DateTime.fromMillisecondsSinceEpoch(this.dt, isUtc: true));
+  }
+
+  String getMainWeatherItemDate() {
+    DateTime d = DateTime.fromMillisecondsSinceEpoch(dt,
+        isUtc: true);
+    DateTime n = DateTime.now();
+    if (d.day == n.day)
+      return 'Today, ${DateFormat("MMM d\nh:mm a").format(n)}';
+    else if (d.difference(n).inHours < 24)
+      return 'Tomorrow, ${DateFormat("h a").format(d)}';
+    return DateFormat("MMM d, h a").format(d).toString();
   }
 
   factory Weather.fromJson(Map<String, dynamic> data) {
