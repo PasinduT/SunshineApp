@@ -8,7 +8,7 @@ import 'package:sunshine/components/settings.dart';
 import 'package:sunshine/weather.dart';
 import 'package:sunshine/components/weatherlist.dart';
 
-String weatherApiKey = "d612e0f68dcffc4da1da0965bab8aac0";
+String weatherApiKey = "";
 final API_FORECAST_REQUEST =
     'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
 final API_WEATHER_REQUEST =
