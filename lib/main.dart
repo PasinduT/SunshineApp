@@ -1,55 +1,12 @@
-import 'dart:convert';
-
 import 'package:credentials_helper/credentials_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sunshine/components/settings.dart';
-import 'package:sunshine/weather.dart';
 import 'package:sunshine/components/weatherlist.dart';
+import 'package:sunshine/weather_block.dart';
 
-String weatherApiKey = "d612e0f68dcffc4da1da0965bab8aac0";
-final API_FORECAST_REQUEST =
-    'http://api.openweathermap.org/data/2.5/forecast?q=kirksville&units=metric&appid=$weatherApiKey';
-final API_WEATHER_REQUEST =
-    'http://api.openweathermap.org/data/2.5/weather?q=kirksville&units=metric&appid=$weatherApiKey';
 
-Future<List<Weather>> fetchForecast() async {
-  final response = await http.get(API_FORECAST_REQUEST);
-
-  if (response.statusCode == 200) {
-    List<Weather> weathers = List<Weather>();
-    Map<String, dynamic> data = jsonDecode(response.body);
-    // Testing only
-    print(data['list'].runtimeType);
-    int n = data['list'].length;
-    for (int i = 0; i < n; ++i) {
-      Map<String, dynamic> dataItem = data['list'][i];
-      dataItem['timezone'] = data['city']['timezone'];
-      Weather w = Weather.fromJson(data['list'][i]);
-      weathers.add(w);
-    }
-    return weathers;
-  }
-  throw Exception('Failed to load forecast data');
-}
-
-Future<Weather> fetchWeather() async {
-  final response = await http.get(API_WEATHER_REQUEST);
-
-  if (response.statusCode == 200) {
-    Map<String, dynamic> data = jsonDecode(response.body);
-    // Testing only
-    return Weather.fromJson(data);
-  }
-  throw Exception('Failed to load forecast data');
-}
-
-Future<List> fetchData() async {
-  final forecastData = await fetchForecast();
-  final weatherData = await fetchWeather();
-  return [weatherData, forecastData];
-}
 
 class SunshineApp extends StatefulWidget {
   @override
@@ -57,14 +14,14 @@ class SunshineApp extends StatefulWidget {
 }
 
 class SunshineAppState extends State<SunshineApp> {
-  Future<List> data;
   bool isMetric = true;
+  WeatherBloc weatherBloc = WeatherBloc();
 
   @override
   void initState() {
     super.initState();
-    data = fetchData();
     getIsMetricPreference();
+    _update();
   }
 
   @override
@@ -110,6 +67,10 @@ class SunshineAppState extends State<SunshineApp> {
     setIsMetricPreference();
   }
 
+  void _update() {
+    weatherBloc.updateWeatherData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,25 +86,34 @@ class SunshineAppState extends State<SunshineApp> {
         ),
         actions: <Widget>[
           IconButton(
-              icon: Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                // _toggleIsMetric();
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SettingsPage(
-                              isMetricToggle: _toggleIsMetric,
-                              initialIsMetric: isMetric,
-                            )));
-              }),
+            icon: Icon(Icons.refresh, color: Colors.white,), 
+            tooltip: 'Refresh data',
+            onPressed: () {
+              _update();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: Colors.white,
+            ),
+            tooltip: "Settings",
+            onPressed: () {
+              // _toggleIsMetric();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SettingsPage(
+                            isMetricToggle: _toggleIsMetric,
+                            initialIsMetric: isMetric,
+                          )));
+            }
+          ),
         ],
       ),
       body: Center(
-        child: FutureBuilder<List>(
-          future: data,
+        child: StreamBuilder<List>(
+          stream: weatherBloc.weatherData,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return WeatherList(
