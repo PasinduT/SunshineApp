@@ -27,19 +27,20 @@ class MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PreferencesModel>(
-        builder: (context, preferencesModel, child) {
-      return ListTile(
-        title: Text('Metric units'),
-        trailing: Switch(
-          activeColor: Colors.blue,
-          activeTrackColor: Colors.lightBlue,
-          value: preferencesModel.isMetric,
-          onChanged: (bool) {
-            preferencesModel.toggleIsMetric();
-          },
-        ),
-      );
-    });
+    return ListTile(
+      title: Text('Metric units'),
+      trailing: Consumer<PreferencesModel>(
+        builder: (context, preferenceModel, child) {
+          return Switch(
+            activeColor: Colors.blue,
+            activeTrackColor: Colors.lightBlue,
+            value: preferenceModel.isMetric,
+            onChanged: (bool) {
+              preferenceModel.toggleIsMetric();
+            },
+          );
+        },
+      ),
+    );
   }
 }

@@ -20,7 +20,7 @@ String weatherApiKey = "{api_key}";
 ### TODO
 - [x] Add ability to switch between units
 - [ ] Ability to change location
-- [ ] Add animations
+- [x] Add animations
 - [x] Get current weather in the main window
 - [x] View more data when you click on an item
     - [ ] Parse more weather features and add them in the details page

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:sunshine/components/settings.dart';
 import 'package:sunshine/components/weatherlist.dart';
+import 'package:flutter/animation.dart';
 import 'package:sunshine/preferences_model.dart';
 import 'package:sunshine/weather_block.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,24 @@ class SunshineAppState extends State<SunshineApp> {
 
   void _update() {
     weatherBloc.updateWeatherData();
+  }
+
+  Route _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => SettingsPage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = Offset(1.0, 0.0);
+        var end = Offset.zero;
+        var curve = Curves.easeIn;
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
@@ -63,7 +82,7 @@ class SunshineAppState extends State<SunshineApp> {
               onPressed: () {
                 // _toggleIsMetric();
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()));
+                    _createRoute());
               }),
         ],
       ),
@@ -91,7 +110,7 @@ class SunshineAppState extends State<SunshineApp> {
 void main() {
   runApp(ChangeNotifierProvider(
     create: (context) => PreferencesModel(false),
-      child: MaterialApp(
+    child: MaterialApp(
         title: 'SunshineApp',
         home: SunshineApp(),
         theme: ThemeData(

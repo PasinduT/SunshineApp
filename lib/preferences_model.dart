@@ -16,7 +16,7 @@ class PreferencesModel extends ChangeNotifier {
   void toggleIsMetric() {
     if (_isMetric) _isMetric = false;
     else _isMetric = true;
-
+      
     setIsMetricPreference();
     notifyListeners();
   }
@@ -38,6 +38,7 @@ class PreferencesModel extends ChangeNotifier {
         print('Failed to load isMetric configuration from disk');
       } else {
         _isMetric = prefs.getBool('metric');
+        notifyListeners();
         print('Loaded isMetric configuration from disk');
       }
       // isMetric = prefs.getBool('metric') ?? isMetric;

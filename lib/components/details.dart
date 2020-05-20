@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sunshine/weather.dart';
 
 class DetailsPage extends StatelessWidget {
-  const DetailsPage({this.weather});
+  const DetailsPage(this.weather, {Key key}): super(key: key);
 
   final Weather weather;
   @override
